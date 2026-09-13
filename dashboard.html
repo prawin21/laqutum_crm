@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaquTum Admin CRM - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Supabase -->
+    <script src="supabase.min.js"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="admin-body">
+
+    <!-- Top Navigation -->
+    <nav class="admin-nav">
+        <div class="nav-left">
+            <h1 class="admin-title">Laqu<span class="highlight-violet">Tum</span> <span class="nav-badge">CRM</span></h1>
+        </div>
+        <div class="nav-right">
+            <span id="admin-email">Loading...</span>
+            <button id="logout-btn" class="outline-btn">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <header class="page-header">
+            <h2>User Management</h2>
+            <div class="header-actions">
+                <input type="text" id="search-users" placeholder="Search by email..." class="search-input">
+                <button id="refresh-btn" class="secondary-btn">Refresh Data</button>
+            </div>
+        </header>
+
+        <!-- Users Table -->
+        <div class="table-container">
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Created At</th>
+                        <th>XP</th>
+                        <th>Streak</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="users-tbody">
+                    <!-- Data populated by JS -->
+                </tbody>
+            </table>
+            <div id="table-loading" class="table-loading">Loading users...</div>
+        </div>
+    </main>
+
+    <!-- User Detail Modal -->
+    <div id="user-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modal-user-email">user@example.com</h3>
+                <button id="close-modal" class="close-btn">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Total XP</span>
+                        <span class="stat-value" id="modal-xp">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Current Streak</span>
+                        <span class="stat-value" id="modal-streak">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Unlocked Topics</span>
+                        <span class="stat-value" id="modal-topics">None</span>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h4>Learning Curve (Confidence vs Accuracy)</h4>
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="ban-toggle-btn" class="danger-btn">Ban User</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration & Scripts -->
+    <script src="supabase-config.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+</body>
+</html>

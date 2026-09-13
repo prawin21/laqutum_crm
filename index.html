@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaquTum Admin CRM - Login</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Supabase -->
+    <script src="supabase.min.js"></script>
+</head>
+<body class="admin-body flex-center">
+
+    <div class="login-card">
+        <div class="logo-area">
+            <h1 class="admin-title">Laqu<span class="highlight-violet">Tum</span></h1>
+            <p class="admin-subtitle">Admin CRM Access</p>
+        </div>
+
+        <form id="admin-login-form" onsubmit="event.preventDefault()">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" required placeholder="admin@laqutum.com">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" required placeholder="••••••••">
+            </div>
+            
+            <div id="error-msg" class="error-msg hidden"></div>
+
+            <button type="submit" class="primary-btn" id="login-btn">
+                <span>Access Dashboard</span>
+                <div class="btn-spinner hidden" id="login-spinner"></div>
+            </button>
+        </form>
+    </div>
+
+    <!-- Configuration & Scripts -->
+    <script src="supabase-config.js?v=2"></script>
+    <script src="app.js?v=2"></script>
+</body>
+</html>
