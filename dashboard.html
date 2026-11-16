@@ -15,9 +15,10 @@
     <!-- Top Navigation -->
     <nav class="admin-nav">
         <div class="nav-left">
-            <h1 class="admin-title">Laqu<span class="highlight-violet">Tum</span> <span class="nav-badge">CRM</span></h1>
+            <h1 class="admin-title">Laqu<span class="logo-accent">Tum</span> <span class="nav-badge">CRM</span></h1>
         </div>
         <div class="nav-right">
+            <a href="careers.html" class="secondary-btn" style="text-decoration:none">Careers applications</a>
             <span id="admin-email">Loading...</span>
             <button id="logout-btn" class="outline-btn">Logout</button>
         </div>
@@ -28,20 +29,46 @@
         <header class="page-header">
             <h2>User Management</h2>
             <div class="header-actions">
-                <input type="text" id="search-users" placeholder="Search by email..." class="search-input">
+                <input type="text" id="search-users" placeholder="Search by name or email..." class="search-input">
+                <button id="sync-emails-btn" class="secondary-btn" style="background:#8B5CF6; color:white; border-color:#8B5CF6; font-weight:600; cursor:pointer;">⚡ Sync All Emails</button>
+                <button id="export-btn" class="secondary-btn" style="background:#10B981; color:white; border-color:#10B981;">⬇Export CSV</button>
                 <button id="refresh-btn" class="secondary-btn">Refresh Data</button>
             </div>
         </header>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-title">Total Users</div>
+                <div class="kpi-value" id="kpi-total">0</div>
+            </div>
+            <div class="kpi-card" style="border-color: rgba(168, 85, 247, 0.4); background: linear-gradient(135deg, rgba(168, 85, 247, 0.08), rgba(20, 20, 30, 0.8));">
+                <div class="kpi-title" style="color: #c084fc;">👑 Full Access Users</div>
+                <div class="kpi-value" id="kpi-full-access" style="color: #c084fc;">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Active Premium (≥2 Topics)</div>
+                <div class="kpi-value" id="kpi-premium">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Average XP</div>
+                <div class="kpi-value" id="kpi-xp">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-title">Banned Users</div>
+                <div class="kpi-value" id="kpi-banned" style="color:#EF4444;">0</div>
+            </div>
+        </div>
 
         <!-- Users Table -->
         <div class="table-container">
             <table id="users-table">
                 <thead>
                     <tr>
-                        <th>Email</th>
-                        <th>Created At</th>
-                        <th>XP</th>
-                        <th>Streak</th>
+                        <th>User Email / ID</th>
+                        <th>Joined</th>
+                        <th>XP / Streak</th>
+                        <th>Access Level</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -90,8 +117,127 @@
         </div>
     </div>
 
+    <!-- Advanced User Modal -->
+    <div id="advanced-modal" class="modal-overlay hidden">
+        <div class="modal-content advanced">
+            <div class="modal-header">
+                <h2>User Profile & Diagnostics</h2>
+                <button class="close-modal-btn" id="close-advanced-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-grid">
+                    <div class="modal-col">
+                        <h3>General Info</h3>
+                        <p><strong>Email:</strong> <span id="modal-email">...</span> <button id="btn-edit-user-email" class="btn-xs btn-outline" style="margin-left:8px; font-size:0.75rem; padding:2px 8px; cursor:pointer;" title="Set or update this user's email">✏️ Edit</button></p>
+                        <p><strong>ID:</strong> <span id="modal-id" style="font-size:0.8rem; color:#888;">...</span></p>
+                        <p><strong>Joined:</strong> <span id="modal-joined">...</span></p>
+                        <p><strong>XP:</strong> <span id="modal-xp">0</span></p>
+                    </div>
+                    <div class="modal-col">
+                        <h3>Diagnostic Survey</h3>
+                        <p><strong>Status:</strong> <span id="modal-diag-status">...</span></p>
+                        <p><strong>Target:</strong> <span id="modal-diag-target">...</span></p>
+                        <p><strong>Current Knowledge:</strong> <span id="modal-diag-knowledge">...</span></p>
+                        <button id="modal-reset-diag" class="danger-btn" style="margin-top:10px; font-size:0.8rem; padding:6px 12px;">Reset Diagnostic</button>
+                    </div>
+                </div>
+
+                <div class="modal-section" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
+                    <h3>Predicted vs Actual Performance</h3>
+                    <canvas id="performanceChart" width="100" height="40" style="margin-top:10px;"></canvas>
+                </div>
+
+                <!-- Topic & Concept Access Control -->
+                <div class="modal-section" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
+                    <div class="section-title-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div>
+                            <h3 style="margin-bottom:4px;">App Access & Concept Permissions</h3>
+                            <p style="color:#94A3B8; font-size:0.88rem;">Grant unrestricted full access to every concept or toggle individual topics.</p>
+                        </div>
+                    </div>
+
+                    <!-- Master VIP Full Access Banner Card -->
+                    <div id="modal-full-access-box" class="vip-access-card">
+                        <!-- Filled dynamically by JS -->
+                    </div>
+
+                    <!-- Batch Controls & Search -->
+                    <div class="topics-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 12px; gap:10px; flex-wrap:wrap;">
+                        <div class="batch-btns" style="display:flex; gap:8px;">
+                            <button id="btn-unlock-all-topics" class="btn-xs btn-outline">Select All Topics</button>
+                            <button id="btn-lock-all-topics" class="btn-xs btn-outline">Clear All</button>
+                        </div>
+                        <input type="text" id="modal-topics-search" placeholder="Filter topics..." style="padding:6px 12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:white; font-size:0.82rem; width:180px;">
+                    </div>
+
+                    <div id="modal-topics-grid" class="topics-grid">
+                        <!-- Filled dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync All Emails Modal -->
+    <div id="sync-modal" class="modal-overlay hidden">
+        <div class="modal-content" style="max-width: 680px; background: #111827; border: 1px solid rgba(139, 92, 246, 0.35); border-radius: 12px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:16px; margin-bottom:18px;">
+                <h2 style="font-size:1.25rem; color:#fff; display:flex; align-items:center; gap:8px; margin:0;">
+                    <span>⚡</span> Sync All User Emails from Supabase Auth
+                </h2>
+                <button class="close-modal-btn" id="close-sync-modal" style="background:transparent; border:none; color:#9ca3af; font-size:1.6rem; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            
+            <div class="modal-body" style="color:#d1d5db; font-size:0.9rem; line-height:1.5;">
+                <p style="margin-bottom:16px;">
+                    Every student/user who signs up or logs into LaquTum has their email registered in Supabase Auth (<code style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:4px; color:#c084fc;">auth.users</code>).
+                    Choose one of the two quick methods below to sync all email IDs till date into this CRM dashboard:
+                </p>
+
+                <!-- Method 1: Instant SQL Script -->
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(139, 92, 246, 0.25); border-radius:8px; padding:16px; margin-bottom:18px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <h4 style="color:#a855f7; font-size:0.95rem; margin:0; display:flex; align-items:center; gap:6px;">
+                            <span>Option 1:</span> Run 1-Click SQL Script in Supabase (Instant)
+                        </h4>
+                        <button id="copy-sql-btn" style="background:#8b5cf6; color:white; border:none; padding:5px 12px; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer;">📋 Copy SQL</button>
+                    </div>
+                    <p style="font-size:0.82rem; color:#94a3b8; margin-bottom:10px;">
+                        Copies all existing user emails from <code style="color:#e2e8f0;">auth.users</code> into <code style="color:#e2e8f0;">user_progress</code> and installs a permanent trigger so all future sign-ups are always automatically synced.
+                    </p>
+                    <pre id="sync-sql-code" style="background:#0b0f17; padding:12px; border-radius:6px; font-family:monospace; font-size:0.75rem; color:#38bdf8; overflow-x:auto; max-height:130px; border:1px solid rgba(255,255,255,0.08); white-space:pre-wrap;"></pre>
+                    <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <a href="https://supabase.com/dashboard/project/vsynumwowwpnacjmqqmu/sql/new" target="_blank" style="background:rgba(59, 130, 246, 0.15); border:1px solid #3b82f6; color:#60a5fa; text-decoration:none; padding:7px 14px; border-radius:6px; font-size:0.82rem; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
+                            ↗ Open Supabase SQL Editor
+                        </a>
+                        <button id="btn-sql-done-refresh" style="background:#10b981; color:white; border:none; padding:7px 14px; border-radius:6px; font-size:0.82rem; font-weight:600; cursor:pointer;">
+                            ✓ I've Run It — Refresh Dashboard
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Method 2: Secret Key Sync -->
+                <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:16px;">
+                    <h4 style="color:#a855f7; font-size:0.95rem; margin:0 0 6px; display:flex; align-items:center; gap:6px;">
+                        <span>Option 2:</span> Sync via Supabase Secret / Service Role Key
+                    </h4>
+                    <p style="font-size:0.82rem; color:#94a3b8; margin-bottom:10px;">
+                        Paste your Supabase <code style="color:#e2e8f0;">service_role</code> or secret key from <strong style="color:#e2e8f0;">Project Settings &rarr; API</strong> to pull and sync all users directly via API right here.
+                    </p>
+                    <div style="display:flex; gap:8px;">
+                        <input type="password" id="input-service-key" placeholder="Paste sb_secret_... or service_role key here" style="flex:1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.15); border-radius:6px; padding:8px 12px; color:white; font-size:0.84rem;">
+                        <button id="btn-sync-via-key" style="background:#8b5cf6; color:white; border:none; padding:8px 16px; border-radius:6px; font-size:0.84rem; font-weight:600; cursor:pointer; white-space:nowrap;">Sync Now</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="crm-toast" class="crm-toast hidden"></div>
+
     <!-- Configuration & Scripts -->
-    <script src="supabase-config.js?v=2"></script>
-    <script src="app.js?v=2"></script>
+    <script src="supabase-config.js?v=6"></script>
+    <script src="app.js?v=6"></script>
 </body>
 </html>
